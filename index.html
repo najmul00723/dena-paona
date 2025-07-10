@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>দেনা পাওনা</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tinos:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Tinos', serif;
+            background-color: #EAE2B7; /* Lemon Meringue */
+            overscroll-behavior-x: none; /* Prevents swipe-to-navigate in browser */
+        }
+        .bg-prussian-blue { background-color: #003049; }
+        .bg-imperial-red { background-color: #d62828; }
+        .bg-orange-web { background-color: #f77f00; }
+        .text-orange-web { color: #f77f00; }
+        .bg-selective-yellow { background-color: #fcbf49; }
+        .text-selective-yellow { color: #fcbf49; }
+        .bg-lemon-meringue { background-color: #eae2b7; }
+        .border-prussian-blue { border-color: #003049; }
+
+        /* Custom scrollbar for better look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #eae2b7;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #003049;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #f77f00;
+        }
+        .modal {
+            display: none; /* Hidden by default */
+        }
+        .modal.flex {
+            display: flex;
+        }
+    </style>
+</head>
+<body class="text-prussian-blue">
+
+    <!-- Login Page -->
+    <div id="login-page" class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white rounded-lg shadow-2xl p-8">
+            <h2 id="auth-title" class="text-3xl font-bold text-center text-prussian-blue mb-2">লগইন করুন</h2>
+            <p class="text-center text-gray-500 mb-6">আপনার হিসাব পরিচালনা করতে</p>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="email" class="block text-sm font-bold text-gray-700 mb-1">ইমেইল</label>
+                    <input type="email" id="email" class="w-full p-3 border-2 border-prussian-blue rounded-md focus:outline-none focus:ring-2 focus:ring-orange-web" required>
+                </div>
+                <div>
+                    <label for="password" class="block text-sm font-bold text-gray-700 mb-1">পাসওয়ার্ড</label>
+                    <input type="password" id="password" class="w-full p-3 border-2 border-prussian-blue rounded-md focus:outline-none focus:ring-2 focus:ring-orange-web" required>
+                </div>
+                <div id="auth-error" class="text-red-500 text-sm text-center"></div>
+                <button type="submit" id="auth-button" class="w-full bg-orange-web text-white py-3 rounded-md font-bold text-lg hover:bg-opacity-90 transition-all">লগইন</button>
+            </form>
+            <p class="text-center text-sm text-gray-600 mt-6">
+                <span id="auth-prompt">অ্যাকাউন্ট নেই?</span>
+                <button id="auth-toggle-btn" class="font-bold text-orange-web hover:underline">এখানে সাইন আপ করুন</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="hidden container mx-auto max-w-7xl p-4 min-h-screen flex-col">
+
+        <!-- Header -->
+        <header class="bg-prussian-blue text-white p-4 rounded-lg shadow-lg mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl md:text-4xl font-bold">দেনা পাওনা</h1>
+                <p class="text-sm text-gray-300 mt-1">ব্যক্তিগত লেনদেনের সহজ হিসাব</p>
+            </div>
+            <button id="logout-btn" class="bg-imperial-red text-white p-2 md:px-3 md:py-2 rounded-full md:rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center md:space-x-2">
+                <i data-lucide="log-out" class="w-5 h-5"></i>
+                <span class="hidden md:inline">লগ আউট</span>
+            </button>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="bg-white/80 backdrop-blur-sm p-2 rounded-lg shadow-md mb-6 sticky top-4 z-40">
+            <ul class="flex items-center justify-start md:justify-center space-x-2 md:space-x-6 text-sm md:text-base overflow-x-auto pb-2 px-2">
+                <li><button onclick="showPage('dashboard')" class="nav-btn active-nav p-2 rounded-md transition-all duration-300 flex items-center space-x-1 whitespace-nowrap"><i data-lucide="layout-dashboard" class="w-4 h-4"></i><span>ড্যাশবোর্ড</span></button></li>
+                <li><button onclick="showPage('shops')" class="nav-btn p-2 rounded-md transition-all duration-300 flex items-center space-x-1 whitespace-nowrap"><i data-lucide="store" class="w-4 h-4"></i><span>দোকান</span></button></li>
+                <li><button onclick="showPage('general_debt')" class="nav-btn p-2 rounded-md transition-all duration-300 flex items-center space-x-1 whitespace-nowrap"><i data-lucide="users" class="w-4 h-4"></i><span>সাধারণ দেনা</span></button></li>
+                <li><button onclick="showPage('receivables')" class="nav-btn p-2 rounded-md transition-all duration-300 flex items-center space-x-1 whitespace-nowrap"><i data-lucide="hand-coins" class="w-4 h-4"></i><span>পাওনা</span></button></li>
+                <li><button onclick="showPage('data_export')" class="nav-btn p-2 rounded-md transition-all duration-300 flex items-center space-x-1 whitespace-nowrap"><i data-lucide="database-backup" class="w-4 h-4"></i><span>ডাটা</span></button></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main id="main-content" class="flex-grow">
+            <!-- Dashboard Page -->
+            <div id="dashboard" class="page">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                        <h3 class="text-lg font-bold text-gray-600">মোট দোকানের দেনা</h3>
+                        <p id="totalShopDebt" class="text-3xl font-bold text-imperial-red mt-2">৳ ০</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                        <h3 class="text-lg font-bold text-gray-600">মোট সাধারণ দেনা</h3>
+                        <p id="totalGeneralDebt" class="text-3xl font-bold text-imperial-red mt-2">৳ ০</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                        <h3 class="text-lg font-bold text-gray-600">সর্বমোট দেনা</h3>
+                        <p id="totalDebt" class="text-3xl font-bold text-imperial-red mt-2">৳ ০</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center transition-transform transform hover:scale-105">
+                        <h3 class="text-lg font-bold text-gray-600">মোট পাওনা</h3>
+                        <p id="totalReceivables" class="text-3xl font-bold text-green-600 mt-2">৳ ০</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Common Page Structure (for Shops, General Debt, Receivables) -->
+            <div id="shops" class="page hidden"></div>
+            <div id="general_debt" class="page hidden"></div>
+            <div id="receivables" class="page hidden"></div>
+
+            <!-- Data Export/Import Page -->
+            <div id="data_export" class="page hidden">
+                <div class="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
+                    <h2 class="text-2xl font-bold text-center mb-6 border-b-2 pb-2 border-prussian-blue">ডাটা ম্যানেজমেন্ট</h2>
+                    <div class="space-y-4">
+                        <button onclick="exportData()" class="w-full bg-prussian-blue text-white py-3 rounded-lg font-bold flex items-center justify-center space-x-2 hover:bg-opacity-90 transition-all">
+                            <i data-lucide="download" class="w-5 h-5"></i>
+                            <span>ডাটা এক্সপোর্ট করুন (JSON)</span>
+                        </button>
+                        <div>
+                            <label for="importFile" class="w-full bg-orange-web text-white py-3 rounded-lg font-bold flex items-center justify-center space-x-2 hover:bg-opacity-90 transition-all cursor-pointer">
+                                <i data-lucide="upload" class="w-5 h-5"></i>
+                                <span>ডাটা ইম্পোর্ট করুন (JSON)</span>
+                            </label>
+                            <input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)">
+                        </div>
+                    </div>
+                     <div id="import-status" class="mt-4 text-center"></div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-prussian-blue text-white text-center p-4 mt-8 rounded-lg shadow-lg">
+            <p>&copy; 2025 দেনা পাওনা | App Created with <span class="font-bold text-orange-web">Najmul Bin Jalal Uddin</span></p>
+        </footer>
+    </div>
+
+    <!-- Add/Edit Entity Modal -->
+    <div id="entityModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+        <div class="bg-lemon-meringue rounded-lg shadow-2xl p-6 w-full max-w-md transform transition-all scale-95 opacity-0" id="entityModalContent">
+            <h2 id="entityModalTitle" class="text-2xl font-bold mb-4 text-prussian-blue"></h2>
+            <form id="entityForm">
+                <input type="hidden" id="entityId">
+                <input type="hidden" id="entityType">
+                <div class="mb-4">
+                    <label id="entityNameLabel" for="entityName" class="block text-sm font-bold mb-1"></label>
+                    <input type="text" id="entityName" class="w-full p-2 border-2 border-prussian-blue rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-orange-web" required>
+                </div>
+                <div class="mb-4">
+                    <label id="entityPhoneLabel" for="entityPhone" class="block text-sm font-bold mb-1"></label>
+                    <input type="tel" id="entityPhone" class="w-full p-2 border-2 border-prussian-blue rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-orange-web">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeEntityModal()" class="bg-gray-500 text-white px-4 py-2 rounded-md font-bold hover:bg-gray-600">বাতিল</button>
+                    <button type="submit" class="bg-orange-web text-white px-4 py-2 rounded-md font-bold hover:bg-opacity-90">সেভ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div id="detailsModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+        <div class="bg-lemon-meringue rounded-lg shadow-2xl p-0 w-full max-w-2xl max-h-[90vh] flex flex-col transform transition-all scale-95 opacity-0" id="detailsModalContent">
+            <div class="flex justify-between items-center p-4 border-b-2 border-prussian-blue">
+                 <h2 id="detailsModalTitle" class="text-xl font-bold text-prussian-blue"></h2>
+                 <button onclick="closeDetailsModal()" class="p-1 rounded-full hover:bg-red-200"><i data-lucide="x" class="w-6 h-6 text-imperial-red"></i></button>
+            </div>
+
+            <div class="p-4 flex-grow overflow-y-auto">
+                <!-- Add Item/Payment Form -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <!-- Add Item -->
+                    <div class="bg-white/80 p-3 rounded-lg shadow">
+                         <h3 id="addItemTitle" class="font-bold mb-2 text-center">নতুন দেনা যোগ করুন</h3>
+                         <form id="itemForm" class="space-y-2">
+                            <input type="hidden" id="detailsEntityId">
+                            <input type="hidden" id="detailsEntityType">
+                            <input type="hidden" id="itemId">
+                            <input type="text" id="itemName" placeholder="পণ্যের বিবরণ" class="w-full p-2 border border-gray-300 rounded-md" required>
+                            <input type="number" id="itemAmount" placeholder="টাকার পরিমাণ" class="w-full p-2 border border-gray-300 rounded-md" required>
+                            <input type="date" id="itemDate" class="w-full p-2 border border-gray-300 rounded-md" required>
+                            <button type="submit" id="addItemBtn" class="w-full bg-orange-web text-white py-2 rounded-md font-bold hover:bg-opacity-90 flex items-center justify-center space-x-2"><i data-lucide="plus-circle" class="w-5 h-5"></i><span>যোগ করুন</span></button>
+                         </form>
+                    </div>
+                    <!-- Add Payment -->
+                     <div class="bg-white/80 p-3 rounded-lg shadow">
+                         <h3 id="addPaymentTitle" class="font-bold mb-2 text-center">পরিশোধ করুন</h3>
+                         <form id="paymentForm" class="space-y-2">
+                            <input type="hidden" id="paymentId">
+                            <input type="text" id="paymentDescription" placeholder="বিবরণ (যেমন: বিকাশ, নগদ)" class="w-full p-2 border border-gray-300 rounded-md">
+                            <input type="number" id="paymentAmount" placeholder="টাকার পরিমাণ" class="w-full p-2 border border-gray-300 rounded-md" required>
+                            <input type="date" id="paymentDate" class="w-full p-2 border border-gray-300 rounded-md" required>
+                            <button type="submit" id="paymentSubmitBtn" class="w-full bg-green-600 text-white py-2 rounded-md font-bold hover:bg-green-700 flex items-center justify-center space-x-2"><i data-lucide="check-circle" class="w-5 h-5"></i><span>পরিশোধ</span></button>
+                         </form>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="mb-4 border-b border-gray-200">
+                    <nav class="flex space-x-4" aria-label="Tabs">
+                        <button onclick="showTab('itemsTab')" class="tab-btn font-bold py-2 px-4 text-prussian-blue border-b-2 border-orange-web">দেনার বিবরণ</button>
+                        <button onclick="showTab('paymentsTab')" class="tab-btn font-bold py-2 px-4 text-gray-500 border-b-2 border-transparent">পরিশোধিত বিবরণ</button>
+                    </nav>
+                </div>
+
+                <!-- Items List -->
+                <div id="itemsTab" class="tab-content">
+                    <div id="itemsList" class="space-y-2"></div>
+                </div>
+
+                <!-- Payments List -->
+                <div id="paymentsTab" class="tab-content hidden">
+                    <div id="paymentsList" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-prussian-blue text-white rounded-b-lg flex justify-between items-center">
+                <h3 id="totalDueLabel" class="text-lg font-bold">মোট দেনা:</h3>
+                <p id="detailsTotalDue" class="text-2xl font-bold text-selective-yellow">৳ ০</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm transform transition-all scale-95 opacity-0" id="confirmModalContent">
+            <h2 id="confirmModalTitle" class="text-xl font-bold mb-4 text-prussian-blue">আপনি কি নিশ্চিত?</h2>
+            <p id="confirmModalMessage" class="text-gray-600 mb-6"></p>
+            <div class="flex justify-end space-x-3">
+                <button id="confirmCancelBtn" class="bg-gray-500 text-white px-4 py-2 rounded-md font-bold hover:bg-gray-600">বাতিল</button>
+                <button id="confirmOkBtn" class="bg-imperial-red text-white px-4 py-2 rounded-md font-bold hover:bg-opacity-90">নিশ্চিত করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert/Toast -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-prussian-blue text-white px-6 py-3 rounded-lg shadow-lg opacity-0 translate-y-10 transition-all duration-300 z-50">
+        <p id="toastMessage"></p>
+    </div>
+
+
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, 
+            collection, query, writeBatch, getDocs, serverTimestamp, Timestamp
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { 
+            getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut,
+            setPersistence, browserLocalPersistence
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAb90CNwvd9ObbhDPaZ8E4hrTfXYd3thpw",
+            authDomain: "dena-paona-f2d10.firebaseapp.com",
+            projectId: "dena-paona-f2d10",
+            storageBucket: "dena-paona-f2d10.appspot.com",
+            messagingSenderId: "311454772243",
+            appId: "1:311454772243:web:ce7a47ade466d437cbe3e6"
+        };
+        
+        // --- Initialize Firebase ---
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        let userId = null;
+        let isLoginMode = true;
+        let dashboardTotals = {
+            shops: 0,
+            general_debt: 0,
+            receivables: 0
+        };
+        
+        const pageConfigs = {
+            shops: {
+                title: 'দোকান লিস্ট',
+                collectionName: 'shops',
+                nameLabel: 'দোকানের নাম',
+                phoneLabel: 'ফোন নাম্বার',
+                addBtnText: 'নতুন দোকান যোগ করুন',
+                totalLabel: 'মোট দোকান',
+                cardTitlePrefix: '',
+                dueLabel: 'দেনা',
+                details: {
+                    addItemTitle: 'নতুন দেনা যোগ করুন',
+                    addPaymentTitle: 'দোকানকে পরিশোধ করুন',
+                    totalDueLabel: 'মোট দেনা',
+                    itemsTabLabel: 'দেনার বিবরণ',
+                    paymentsTabLabel: 'পরিশোধিত বিবরণ',
+                    itemNamePlaceholder: 'পণ্যের বিবরণ',
+                }
+            },
+            general_debt: {
+                title: 'সাধারণ দেনা লিস্ট',
+                collectionName: 'general_debt',
+                nameLabel: 'ব্যক্তির নাম',
+                phoneLabel: 'ফোন নাম্বার',
+                addBtnText: 'নতুন দেনা যোগ করুন',
+                totalLabel: 'মোট দেনা',
+                cardTitlePrefix: '',
+                dueLabel: 'দেনা',
+                details: {
+                    addItemTitle: 'নতুন দেনা যোগ করুন',
+                    addPaymentTitle: 'দেনা পরিশোধ করুন',
+                    totalDueLabel: 'মোট দেনা',
+                    itemsTabLabel: 'দেনার বিবরণ',
+                    paymentsTabLabel: 'পরিশোধিত বিবরণ',
+                    itemNamePlaceholder: 'দেনার কারণ',
+                }
+            },
+            receivables: {
+                title: 'পাওনা লিস্ট',
+                collectionName: 'receivables',
+                nameLabel: 'ব্যক্তির নাম',
+                phoneLabel: 'ফোন নাম্বার',
+                addBtnText: 'নতুন পাওনা যোগ করুন',
+                totalLabel: 'মোট পাওনা',
+                cardTitlePrefix: '',
+                dueLabel: 'পাওনা',
+                details: {
+                    addItemTitle: 'নতুন পাওনা যোগ করুন',
+                    addPaymentTitle: 'পাওনা আদায় করুন',
+                    totalDueLabel: 'মোট পাওনা',
+                    itemsTabLabel: 'পাওনার বিবরণ',
+                    paymentsTabLabel: 'আদায়কৃত বিবরণ',
+                    itemNamePlaceholder: 'পাওনার কারণ',
+                }
+            }
+        };
+
+        // --- Authentication ---
+        const loginPage = document.getElementById('login-page');
+        const appContainer = document.getElementById('app-container');
+        
+        setPersistence(auth, browserLocalPersistence)
+            .then(() => {
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        loginPage.style.display = 'none';
+                        appContainer.style.display = 'flex';
+                        initializeAppListeners();
+                    } else {
+                        userId = null;
+                        loginPage.style.display = 'flex';
+                        appContainer.style.display = 'none';
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error("Auth Persistence Error: ", error);
+            });
+
+
+        function initializeAppListeners() {
+            if (!userId) return;
+            
+            Object.keys(pageConfigs).forEach(type => {
+                const pageElement = document.getElementById(type);
+                if (pageElement) {
+                    pageElement.innerHTML = generatePageHTML(type);
+                    attachPageEventListeners(type);
+                    listenToCollection(type);
+                }
+            });
+            
+            listenForDashboardTotals();
+            showPage('dashboard');
+        }
+
+        // --- Auth UI Logic ---
+        const loginForm = document.getElementById('login-form');
+        const authTitle = document.getElementById('auth-title');
+        const authButton = document.getElementById('auth-button');
+        const authPrompt = document.getElementById('auth-prompt');
+        const authToggleBtn = document.getElementById('auth-toggle-btn');
+        const authError = document.getElementById('auth-error');
+
+        authToggleBtn.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            authError.textContent = '';
+            if (isLoginMode) {
+                authTitle.textContent = 'লগইন করুন';
+                authButton.textContent = 'লগইন';
+                authPrompt.textContent = 'অ্যাকাউন্ট নেই?';
+                authToggleBtn.textContent = 'এখানে সাইন আপ করুন';
+            } else {
+                authTitle.textContent = 'সাইন আপ করুন';
+                authButton.textContent = 'সাইন আপ';
+                authPrompt.textContent = 'ইতিমধ্যে অ্যাকাউন্ট আছে?';
+                authToggleBtn.textContent = 'এখানে লগইন করুন';
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            authError.textContent = '';
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                }
+            } catch (error) {
+                console.error("Auth Error:", error.message);
+                authError.textContent = error.message;
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+
+        // --- UI Navigation ---
+        const pages = document.querySelectorAll('.page');
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const pageOrder = ['dashboard', 'shops', 'general_debt', 'receivables', 'data_export'];
+
+        window.showPage = (pageId, fromSwipe = false) => {
+            const currentPageId = document.querySelector('.page:not(.hidden)');
+            if (currentPageId && currentPageId.id === pageId) return;
+
+            pages.forEach(page => page.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
+
+            navBtns.forEach(btn => btn.classList.remove('active-nav', 'bg-orange-web', 'text-white'));
+            const activeBtn = document.querySelector(`.nav-btn[onclick="showPage('${pageId}')"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active-nav', 'bg-orange-web', 'text-white');
+            }
+        };
+
+        // --- Swipe Navigation ---
+        const mainContent = document.getElementById('main-content');
+        let touchstartX = 0;
+        let touchendX = 0;
+
+        function handleSwipe() {
+            const swipeThreshold = 50; // minimum distance for a swipe
+            if (touchendX < touchstartX - swipeThreshold) { // Swiped left
+                const currentPageId = document.querySelector('.page:not(.hidden)').id;
+                const currentIndex = pageOrder.indexOf(currentPageId);
+                if (currentIndex < pageOrder.length - 1) {
+                    showPage(pageOrder[currentIndex + 1], true);
+                }
+            }
+            if (touchendX > touchstartX + swipeThreshold) { // Swiped right
+                const currentPageId = document.querySelector('.page:not(.hidden)').id;
+                const currentIndex = pageOrder.indexOf(currentPageId);
+                if (currentIndex > 0) {
+                    showPage(pageOrder[currentIndex - 1], true);
+                }
+            }
+        }
+
+        mainContent.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        mainContent.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+
+        window.showTab = (tabId) => {
+            const modalContent = document.getElementById('detailsModalContent');
+            modalContent.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            modalContent.querySelector(`#${tabId}`).classList.remove('hidden');
+
+            modalContent.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-prussian-blue', 'border-orange-web');
+                btn.classList.add('text-gray-500', 'border-transparent');
+            });
+            const activeBtn = modalContent.querySelector(`.tab-btn[onclick="showTab('${tabId}')"]`);
+            activeBtn.classList.add('text-prussian-blue', 'border-orange-web');
+            activeBtn.classList.remove('text-gray-500', 'border-transparent');
+        }
+
+        // --- Dynamic Page Generation ---
+        function generatePageHTML(type) {
+            const config = pageConfigs[type];
+            return `
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <h2 class="text-2xl md:text-3xl font-bold">${config.title}</h2>
+                    <button onclick="openEntityModal('${type}')" class="bg-orange-web text-white px-4 py-2 rounded-lg font-bold shadow-md hover:bg-opacity-90 transition-all flex items-center space-x-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        <span>${config.addBtnText}</span>
+                    </button>
+                </div>
+                <div class="mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+                    <div class="relative w-full md:w-2/3">
+                        <input type="text" id="${type}Search" placeholder="এখানে সার্চ করুন..." class="w-full p-3 pl-10 border-2 border-prussian-blue rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-web">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                    </div>
+                    <div class="bg-white p-3 rounded-lg shadow text-center">
+                        <span class="font-bold">${config.totalLabel}: </span>
+                        <span id="${type}Count" class="font-bold text-orange-web text-lg">0</span>
+                    </div>
+                </div>
+                <div id="${type}List" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Cards will be injected here -->
+                </div>
+            `;
+        }
+        
+        function attachPageEventListeners(type) {
+            const searchInput = document.getElementById(`${type}Search`);
+            if(searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    const cards = document.querySelectorAll(`#${type}List .entity-card`);
+                    cards.forEach(card => {
+                        const cardText = card.textContent.toLowerCase();
+                        if (cardText.includes(searchTerm)) {
+                            card.style.display = '';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+        }
+
+        // --- Firestore Listener for Collections ---
+        function listenToCollection(type) {
+            const collectionName = pageConfigs[type].collectionName;
+            const q = query(collection(db, 'users', userId, collectionName));
+            
+            onSnapshot(q, (querySnapshot) => {
+                const listElement = document.getElementById(`${type}List`);
+                const countElement = document.getElementById(`${type}Count`);
+                if (!listElement || !countElement) return;
+
+                listElement.innerHTML = '';
+                
+                if (querySnapshot.empty) {
+                    listElement.innerHTML = `<p class="text-center text-gray-500 col-span-full">কোনো তথ্য পাওয়া যায়নি।</p>`;
+                }
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'entity-card bg-white p-4 rounded-lg shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 cursor-pointer';
+                    card.dataset.id = doc.id;
+                    card.onclick = () => openDetailsModal(type, doc.id, data.name);
+                    
+                    const due = data.totalDue || 0;
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-bold text-lg text-prussian-blue">${data.name}</h3>
+                                ${data.phone ? `<p class="text-sm text-gray-600 flex items-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i>${data.phone}</p>` : ''}
+                            </div>
+                            <div class="flex space-x-2">
+                                <button onclick="event.stopPropagation(); openEntityModal('${type}', '${doc.id}')" class="p-2 text-gray-500 hover:text-blue-600"><i data-lucide="edit" class="w-5 h-5"></i></button>
+                                <button onclick="event.stopPropagation(); deleteEntity('${type}', '${doc.id}')" class="p-2 text-gray-500 hover:text-red-600"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <p class="text-sm font-bold">${pageConfigs[type].dueLabel}: <span class="text-xl ${type === 'receivables' ? 'text-green-600' : 'text-imperial-red'}">৳ ${due.toLocaleString('bn-BD')}</span></p>
+                        </div>
+                    `;
+                    listElement.appendChild(card);
+                });
+                
+                countElement.textContent = querySnapshot.size;
+                lucide.createIcons();
+            }, (error) => {
+                console.error(`Error listening to ${collectionName}: `, error);
+                showToast(`'${pageConfigs[type].title}' লোড করতে সমস্যা হয়েছে।`, 'error');
+            });
+        }
+        
+        function listenForDashboardTotals() {
+            const types = ['shops', 'general_debt', 'receivables'];
+            types.forEach(type => {
+                const collectionName = pageConfigs[type].collectionName;
+                const q = query(collection(db, 'users', userId, collectionName));
+                onSnapshot(q, (querySnapshot) => {
+                    let total = 0;
+                    querySnapshot.forEach(doc => {
+                        total += doc.data().totalDue || 0;
+                    });
+                    
+                    dashboardTotals[type] = total;
+                    
+                    if (type === 'shops') document.getElementById('totalShopDebt').textContent = `৳ ${total.toLocaleString('bn-BD')}`;
+                    if (type === 'general_debt') document.getElementById('totalGeneralDebt').textContent = `৳ ${total.toLocaleString('bn-BD')}`;
+                    if (type === 'receivables') document.getElementById('totalReceivables').textContent = `৳ ${total.toLocaleString('bn-BD')}`;
+                    
+                    updateNetBalance();
+                }, (error) => {
+                    console.error(`Error listening to dashboard total for ${collectionName}: `, error);
+                });
+            });
+        }
+        
+        function updateNetBalance() {
+            const shopDebt = dashboardTotals.shops || 0;
+            const generalDebt = dashboardTotals.general_debt || 0;
+            
+            const totalDebt = shopDebt + generalDebt;
+            
+            document.getElementById('totalDebt').textContent = `৳ ${totalDebt.toLocaleString('bn-BD')}`;
+        }
+
+        // --- Confirmation Modal Logic ---
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmModalContent = document.getElementById('confirmModalContent');
+        const confirmModalMessage = document.getElementById('confirmModalMessage');
+        const confirmOkBtn = document.getElementById('confirmOkBtn');
+        const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+        let confirmCallback = null;
+
+        function showConfirmModal(message, callback) {
+            confirmModalMessage.textContent = message;
+            confirmCallback = callback;
+            
+            confirmModal.classList.add('flex');
+            setTimeout(() => {
+                confirmModalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        }
+
+        function closeConfirmModal() {
+            confirmModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                confirmModal.classList.remove('flex');
+                confirmCallback = null;
+            }, 200);
+        }
+
+        confirmOkBtn.addEventListener('click', () => {
+            if (confirmCallback) {
+                confirmCallback();
+            }
+            closeConfirmModal();
+        });
+
+        confirmCancelBtn.addEventListener('click', closeConfirmModal);
+
+        // --- Entity Modal (Add/Edit Shop, Person etc.) ---
+        const entityModal = document.getElementById('entityModal');
+        const entityModalContent = document.getElementById('entityModalContent');
+        
+        window.openEntityModal = async (type, id = null) => {
+            const config = pageConfigs[type];
+            document.getElementById('entityForm').reset();
+            document.getElementById('entityId').value = id || '';
+            document.getElementById('entityType').value = type;
+            document.getElementById('entityModalTitle').textContent = id ? `এডিট করুন` : config.addBtnText;
+            document.getElementById('entityNameLabel').textContent = config.nameLabel;
+            document.getElementById('entityPhoneLabel').textContent = config.phoneLabel;
+
+            if (id) {
+                const docRef = doc(db, 'users', userId, config.collectionName, id);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('entityName').value = data.name;
+                    document.getElementById('entityPhone').value = data.phone || '';
+                }
+            }
+            
+            entityModal.classList.add('flex');
+            setTimeout(() => {
+                entityModalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        };
+
+        window.closeEntityModal = () => {
+            entityModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                entityModal.classList.remove('flex');
+            }, 200);
+        };
+        
+        document.getElementById('entityForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('entityId').value;
+            const type = document.getElementById('entityType').value;
+            const name = document.getElementById('entityName').value;
+            const phone = document.getElementById('entityPhone').value;
+            const collectionName = pageConfigs[type].collectionName;
+
+            const data = { name, phone, updatedAt: serverTimestamp() };
+
+            try {
+                if (id) {
+                    const docRef = doc(db, 'users', userId, collectionName, id);
+                    await updateDoc(docRef, data);
+                    showToast('সফলভাবে আপডেট হয়েছে।');
+                } else {
+                    data.createdAt = serverTimestamp();
+                    data.totalDue = 0;
+                    await addDoc(collection(db, 'users', userId, collectionName), data);
+                    showToast('সফলভাবে যোগ হয়েছে।');
+                }
+                closeEntityModal();
+            } catch (error) {
+                console.error("Error saving entity: ", error);
+                showToast('একটি সমস্যা হয়েছে।', 'error');
+            }
+        });
+
+        window.deleteEntity = (type, id) => {
+            const message = 'আপনি কি নিশ্চিতভাবে এটি মুছে ফেলতে চান? এর সাথে সম্পর্কিত সকল লেনদেন মুছে যাবে।';
+            showConfirmModal(message, async () => {
+                const collectionName = pageConfigs[type].collectionName;
+                const docRef = doc(db, 'users', userId, collectionName, id);
+                
+                try {
+                    const batch = writeBatch(db);
+                    const itemsRef = collection(docRef, 'items');
+                    const paymentsRef = collection(docRef, 'payments');
+                    
+                    const itemsSnap = await getDocs(itemsRef);
+                    itemsSnap.forEach(d => batch.delete(d.ref));
+                    
+                    const paymentsSnap = await getDocs(paymentsRef);
+                    paymentsSnap.forEach(d => batch.delete(d.ref));
+
+                    batch.delete(docRef);
+                    await batch.commit();
+
+                    showToast('সফলভাবে মুছে ফেলা হয়েছে।');
+                } catch (error) {
+                    console.error("Error deleting entity: ", error);
+                    showToast('মুছে ফেলার সময় সমস্যা হয়েছে।', 'error');
+                }
+            });
+        };
+
+        // --- Details Modal ---
+        const detailsModal = document.getElementById('detailsModal');
+        const detailsModalContent = document.getElementById('detailsModalContent');
+        let itemUnsubscribe = null;
+        let paymentUnsubscribe = null;
+
+        window.openDetailsModal = (type, id, name) => {
+            const config = pageConfigs[type].details;
+            document.getElementById('detailsModalTitle').textContent = `${name} - বিস্তারিত`;
+            document.getElementById('detailsEntityId').value = id;
+            document.getElementById('detailsEntityType').value = type;
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('itemDate').value = today;
+            document.getElementById('paymentDate').value = today;
+            
+            // Configure modal text based on type
+            document.getElementById('addItemTitle').textContent = config.addItemTitle;
+            document.getElementById('addPaymentTitle').textContent = config.addPaymentTitle;
+            document.getElementById('totalDueLabel').textContent = `${config.totalDueLabel}:`;
+            document.querySelector('.tab-btn[onclick="showTab(\'itemsTab\')"]').textContent = config.itemsTabLabel;
+            document.querySelector('.tab-btn[onclick="showTab(\'paymentsTab\')"]').textContent = config.paymentsTabLabel;
+            document.getElementById('itemName').placeholder = config.itemNamePlaceholder;
+
+            const totalDueEl = document.getElementById('detailsTotalDue');
+            totalDueEl.classList.toggle('text-green-600', type === 'receivables');
+            totalDueEl.classList.toggle('text-selective-yellow', type !== 'receivables');
+
+
+            listenToSubCollection(type, id, 'items');
+            listenToSubCollection(type, id, 'payments');
+
+            showTab('itemsTab');
+            detailsModal.classList.add('flex');
+            setTimeout(() => {
+                detailsModalContent.classList.remove('scale-95', 'opacity-0');
+            }, 10);
+        };
+
+        window.closeDetailsModal = () => {
+            if (itemUnsubscribe) itemUnsubscribe();
+            if (paymentUnsubscribe) paymentUnsubscribe();
+            itemUnsubscribe = null;
+            paymentUnsubscribe = null;
+            
+            detailsModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                detailsModal.classList.remove('flex');
+            }, 200);
+        };
+
+        function listenToSubCollection(entityType, entityId, subCollectionType) {
+            const collectionName = pageConfigs[entityType].collectionName;
+            const q = query(collection(db, 'users', userId, collectionName, entityId, subCollectionType));
+            
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const listElement = document.getElementById(`${subCollectionType}List`);
+                listElement.innerHTML = '';
+                if (querySnapshot.empty) {
+                    listElement.innerHTML = `<p class="text-center text-gray-500">কোনো তথ্য নেই।</p>`;
+                }
+                querySnapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'bg-white p-3 rounded-md shadow flex justify-between items-center';
+                    
+                    const transactionDate = data.date ? data.date.toDate().toLocaleDateString('bn-BD') : (data.createdAt ? data.createdAt.toDate().toLocaleDateString('bn-BD') : 'তারিখ নেই');
+                    const dateForInput = data.date ? new Date(data.date.toDate().getTime() - (data.date.toDate().getTimezoneOffset() * 60000)).toISOString().split('T')[0] : '';
+                        
+                    if (subCollectionType === 'items') {
+                        itemDiv.innerHTML = `
+                            <div>
+                                <p class="font-bold">${data.name}</p>
+                                <p class="text-sm text-gray-500">${transactionDate}</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="font-bold text-lg text-imperial-red">৳ ${data.amount.toLocaleString('bn-BD')}</span>
+                                <button onclick="editItem('${entityType}', '${entityId}', '${docSnap.id}', '${data.name.replace(/'/g, "\\'")}', ${data.amount}, '${dateForInput}')" class="p-1 text-gray-400 hover:text-blue-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="deleteSubCollectionDoc('${entityType}', '${entityId}', '${subCollectionType}', '${docSnap.id}')" class="p-1 text-gray-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                            </div>
+                        `;
+                    } else { // payments
+                         itemDiv.innerHTML = `
+                            <div>
+                                <p class="font-bold">${data.description || 'পরিশোধ/আদায়'}</p>
+                                <p class="text-sm text-gray-500">${transactionDate}</p>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <span class="font-bold text-lg text-green-600">৳ ${data.amount.toLocaleString('bn-BD')}</span>
+                                <button onclick="editPayment('${entityType}', '${entityId}', '${docSnap.id}', '${(data.description || '').replace(/'/g, "\\'")}', ${data.amount}, '${dateForInput}')" class="p-1 text-gray-400 hover:text-blue-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                                <button onclick="deleteSubCollectionDoc('${entityType}', '${entityId}', '${subCollectionType}', '${docSnap.id}')" class="p-1 text-gray-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                            </div>
+                        `;
+                    }
+                    listElement.appendChild(itemDiv);
+                });
+                lucide.createIcons();
+                updateDetailsTotal(entityType, entityId);
+            });
+
+            if (subCollectionType === 'items') itemUnsubscribe = unsubscribe;
+            if (subCollectionType === 'payments') paymentUnsubscribe = unsubscribe;
+        }
+        
+        async function updateDetailsTotal(entityType, entityId) {
+            const collectionName = pageConfigs[entityType].collectionName;
+            const parentDocRef = doc(db, 'users', userId, collectionName, entityId);
+            try {
+                const itemsRef = collection(parentDocRef, 'items');
+                const paymentsRef = collection(parentDocRef, 'payments');
+
+                const itemsSnap = await getDocs(itemsRef);
+                const paymentsSnap = await getDocs(paymentsRef);
+
+                let totalItems = 0;
+                itemsSnap.forEach(d => totalItems += d.data().amount);
+
+                let totalPayments = 0;
+                paymentsSnap.forEach(d => totalPayments += d.data().amount);
+
+                const totalDue = totalItems - totalPayments;
+                
+                document.getElementById('detailsTotalDue').textContent = `৳ ${totalDue.toLocaleString('bn-BD')}`;
+                
+                await updateDoc(parentDocRef, { totalDue });
+            } catch (error) {
+                console.error("Error updating total due:", error);
+            }
+        }
+        
+        // --- Item Form (Add/Edit) ---
+        document.getElementById('itemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const entityType = document.getElementById('detailsEntityType').value;
+            const entityId = document.getElementById('detailsEntityId').value;
+            const itemId = document.getElementById('itemId').value;
+            const name = document.getElementById('itemName').value;
+            const amount = parseFloat(document.getElementById('itemAmount').value);
+            const dateValue = document.getElementById('itemDate').value;
+
+            if (isNaN(amount) || amount <= 0) {
+                showToast('সঠিক পরিমাণ লিখুন।', 'error');
+                return;
+            }
+            if (!dateValue) {
+                showToast('অনুগ্রহ করে তারিখ নির্বাচন করুন।', 'error');
+                return;
+            }
+
+            const collectionName = pageConfigs[entityType].collectionName;
+            
+            const data = {
+                name,
+                amount,
+                date: Timestamp.fromDate(new Date(dateValue))
+            };
+
+            try {
+                if (itemId) { // Editing
+                    data.updatedAt = serverTimestamp();
+                    const itemRef = doc(db, 'users', userId, collectionName, entityId, 'items', itemId);
+                    await updateDoc(itemRef, data);
+                    showToast('সফলভাবে আপডেট হয়েছে।');
+                } else { // Adding
+                    data.createdAt = serverTimestamp();
+                    const subCollectionRef = collection(db, 'users', userId, collectionName, entityId, 'items');
+                    await addDoc(subCollectionRef, data);
+                    showToast('সফলভাবে যোগ হয়েছে।');
+                }
+                document.getElementById('itemForm').reset();
+                document.getElementById('itemDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('itemId').value = '';
+                document.getElementById('addItemBtn').innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5"></i><span>যোগ করুন</span>';
+                lucide.createIcons();
+            } catch (error) {
+                console.error("Error saving item: ", error);
+                showToast('একটি সমস্যা হয়েছে।', 'error');
+            }
+        });
+
+        window.editItem = (entityType, entityId, itemId, name, amount, date) => {
+            document.getElementById('detailsEntityType').value = entityType;
+            document.getElementById('detailsEntityId').value = entityId;
+            document.getElementById('itemId').value = itemId;
+            document.getElementById('itemName').value = name;
+            document.getElementById('itemAmount').value = amount;
+            document.getElementById('itemDate').value = date;
+            document.getElementById('addItemBtn').innerHTML = '<i data-lucide="save" class="w-5 h-5"></i><span>আপডেট করুন</span>';
+            lucide.createIcons();
+            document.getElementById('itemName').focus();
+        };
+
+        // --- Payment Form ---
+        document.getElementById('paymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const entityType = document.getElementById('detailsEntityType').value;
+            const entityId = document.getElementById('detailsEntityId').value;
+            const paymentId = document.getElementById('paymentId').value;
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const description = document.getElementById('paymentDescription').value;
+            const dateValue = document.getElementById('paymentDate').value;
+
+            if (isNaN(amount) || amount <= 0) {
+                showToast('সঠিক পরিমাণ লিখুন।', 'error');
+                return;
+            }
+            if (!dateValue) {
+                showToast('অনুগ্রহ করে তারিখ নির্বাচন করুন।', 'error');
+                return;
+            }
+
+            const collectionName = pageConfigs[entityType].collectionName;
+            
+            const data = {
+                amount,
+                description,
+                date: Timestamp.fromDate(new Date(dateValue))
+            };
+
+            try {
+                if (paymentId) { // Editing
+                    data.updatedAt = serverTimestamp();
+                    const paymentRef = doc(db, 'users', userId, collectionName, entityId, 'payments', paymentId);
+                    await updateDoc(paymentRef, data);
+                    showToast('সফলভাবে আপডেট হয়েছে।');
+                } else { // Adding
+                    data.createdAt = serverTimestamp();
+                    const subCollectionRef = collection(db, 'users', userId, collectionName, entityId, 'payments');
+                    await addDoc(subCollectionRef, data);
+                    showToast('পরিশোধ যোগ হয়েছে।');
+                }
+                document.getElementById('paymentForm').reset();
+                document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+                document.getElementById('paymentId').value = '';
+                document.getElementById('paymentSubmitBtn').innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i><span>পরিশোধ</span>';
+                lucide.createIcons();
+            } catch (error) {
+                console.error("Error saving payment: ", error);
+                showToast('একটি সমস্যা হয়েছে।', 'error');
+            }
+        });
+        
+        window.editPayment = (entityType, entityId, paymentId, description, amount, date) => {
+            document.getElementById('detailsEntityType').value = entityType;
+            document.getElementById('detailsEntityId').value = entityId;
+            document.getElementById('paymentId').value = paymentId;
+            document.getElementById('paymentDescription').value = description;
+            document.getElementById('paymentAmount').value = amount;
+            document.getElementById('paymentDate').value = date;
+            document.getElementById('paymentSubmitBtn').innerHTML = '<i data-lucide="save" class="w-5 h-5"></i><span>আপডেট করুন</span>';
+            lucide.createIcons();
+            document.getElementById('paymentDescription').focus();
+        };
+        
+        window.deleteSubCollectionDoc = (entityType, entityId, subCollectionType, docId) => {
+            const message = 'আপনি কি নিশ্চিতভাবে এই আইটেমটি মুছে ফেলতে চান?';
+            showConfirmModal(message, async () => {
+                const collectionName = pageConfigs[entityType].collectionName;
+                const docRef = doc(db, 'users', userId, collectionName, entityId, subCollectionType, docId);
+                
+                try {
+                    await deleteDoc(docRef);
+                    showToast('সফলভাবে মুছে ফেলা হয়েছে।');
+                } catch (error) {
+                    console.error("Error deleting sub-collection doc: ", error);
+                    showToast('মুছে ফেলার সময় সমস্যা হয়েছে।', 'error');
+                }
+            });
+        };
+
+        // --- Data Export/Import ---
+        window.exportData = async () => {
+            if (!userId) {
+                showToast('ডিভাইস আইডি পাওয়া যায়নি।', 'error');
+                return;
+            }
+            showToast('ডাটা এক্সপোর্ট করা হচ্ছে...', 'info');
+            
+            const dataToExport = {};
+            
+            for (const type of Object.keys(pageConfigs)) {
+                const config = pageConfigs[type];
+                dataToExport[config.collectionName] = [];
+                const collectionRef = collection(db, 'users', userId, config.collectionName);
+                const querySnapshot = await getDocs(collectionRef);
+                
+                for (const docSnap of querySnapshot.docs) {
+                    const docData = docSnap.data();
+                    docData.id = docSnap.id;
+                    
+                    // Export subcollections
+                    const itemsSnap = await getDocs(collection(docSnap.ref, 'items'));
+                    docData.items = itemsSnap.docs.map(d => ({...d.data(), id: d.id}));
+
+                    const paymentsSnap = await getDocs(collection(docSnap.ref, 'payments'));
+                    docData.payments = paymentsSnap.docs.map(d => ({...d.data(), id: d.id}));
+
+                    dataToExport[config.collectionName].push(docData);
+                }
+            }
+            
+            const jsonString = JSON.stringify(dataToExport, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dena-paona-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('ডাটা সফলভাবে এক্সপোর্ট হয়েছে।');
+        };
+
+        window.importData = (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const importStatus = document.getElementById('import-status');
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (!confirm('আপনি কি নিশ্চিতভাবে ডাটা ইম্পোর্ট করতে চান? বর্তমান সকল ডাটা মুছে নতুন ডাটা যোগ করা হবে।')) {
+                        importStatus.textContent = 'ইম্পোর্ট বাতিল করা হয়েছে।';
+                        importStatus.className = 'mt-4 text-center text-yellow-600';
+                        return;
+                    }
+
+                    importStatus.textContent = 'ইম্পোর্ট চলছে... অনুগ্রহ করে অপেক্ষা করুন।';
+                    importStatus.className = 'mt-4 text-center text-blue-600';
+
+                    const batch = writeBatch(db);
+
+                    // First, delete all existing data for the user
+                    for (const type of Object.keys(pageConfigs)) {
+                        const config = pageConfigs[type];
+                        const collectionRef = collection(db, 'users', userId, config.collectionName);
+                        const querySnapshot = await getDocs(collectionRef);
+                        for (const docSnap of querySnapshot.docs) {
+                            batch.delete(docSnap.ref);
+                        }
+                    }
+                    await batch.commit(); // Commit deletions first
+
+                    // Now, import new data
+                    const importBatch = writeBatch(db);
+                    for (const type of Object.keys(pageConfigs)) {
+                        const config = pageConfigs[type];
+                        const collectionData = data[config.collectionName];
+                        if (collectionData && Array.isArray(collectionData)) {
+                            for (const record of collectionData) {
+                                const { id, items, payments, ...mainData } = record;
+                                const docRef = doc(db, 'users', userId, config.collectionName, id);
+                                importBatch.set(docRef, mainData);
+
+                                if(items) {
+                                    items.forEach(item => {
+                                        const {id: itemId, ...itemData} = item;
+                                        const itemRef = doc(docRef, 'items', itemId);
+                                        importBatch.set(itemRef, itemData);
+                                    });
+                                }
+                                if(payments) {
+                                    payments.forEach(payment => {
+                                        const {id: paymentId, ...paymentData} = payment;
+                                        const paymentRef = doc(docRef, 'payments', paymentId);
+                                        importBatch.set(paymentRef, paymentData);
+                                    });
+                                }
+                            }
+                        }
+                    }
+                    await importBatch.commit();
+                    
+                    importStatus.textContent = 'ডাটা সফলভাবে ইম্পোর্ট হয়েছে!';
+                    importStatus.className = 'mt-4 text-center text-green-600';
+                    showToast('ডাটা সফলভাবে ইম্পোর্ট হয়েছে!');
+
+                } catch (error) {
+                    console.error("Import error: ", error);
+                    importStatus.textContent = 'ইম্পোর্ট করার সময় সমস্যা হয়েছে। ফাইল ফরম্যাট সঠিক কিনা দেখুন।';
+                    importStatus.className = 'mt-4 text-center text-red-600';
+                    showToast('ইম্পোর্ট ফেইল্ড।', 'error');
+                } finally {
+                    event.target.value = null; // Reset file input
+                }
+            };
+            reader.readAsText(file);
+        };
+        
+        
+        // --- Toast Notification ---
+        let toastTimeout;
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.classList.remove('bg-prussian-blue', 'bg-imperial-red', 'bg-blue-500');
+            
+            if (type === 'error') {
+                toast.classList.add('bg-imperial-red');
+            } else if (type === 'info') {
+                toast.classList.add('bg-blue-500');
+            } else {
+                toast.classList.add('bg-prussian-blue');
+            }
+
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-10');
+            }, 3000);
+        }
+
+        // --- Initial Setup ---
+        window.onload = () => {
+            lucide.createIcons();
+        };
+
+    </script>
+</body>
+</html>
