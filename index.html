@@ -153,7 +153,7 @@
 
         <!-- Footer -->
         <footer class="bg-prussian-blue text-white text-center p-4 mt-8 rounded-lg shadow-lg">
-            <p>&copy; 2025 দেনা পাওনা | App Created with <span class="font-bold text-orange-web">Najmul Bin Jalal Uddin</span></p>
+            <p>&copy; 2024 দেনা পাওনা | App Created with <span class="font-bold text-orange-web">Najmul Bin Jalal Uddin</span></p>
         </footer>
     </div>
 
@@ -191,20 +191,30 @@
             <div class="p-4 flex-grow overflow-y-auto">
                 <!-- Add Item/Payment Form -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <!-- Add Item -->
-                    <div class="bg-white/80 p-3 rounded-lg shadow">
-                         <h3 id="addItemTitle" class="font-bold mb-2 text-center">নতুন দেনা যোগ করুন</h3>
-                         <form id="itemForm" class="space-y-2">
-                            <input type="hidden" id="detailsEntityId">
-                            <input type="hidden" id="detailsEntityType">
-                            <input type="hidden" id="itemId">
-                            <input type="text" id="itemName" placeholder="পণ্যের বিবরণ" class="w-full p-2 border border-gray-300 rounded-md" required>
-                            <input type="number" id="itemAmount" placeholder="টাকার পরিমাণ" class="w-full p-2 border border-gray-300 rounded-md" required>
-                            <input type="date" id="itemDate" class="w-full p-2 border border-gray-300 rounded-md" required>
-                            <button type="submit" id="addItemBtn" class="w-full bg-orange-web text-white py-2 rounded-md font-bold hover:bg-opacity-90 flex items-center justify-center space-x-2"><i data-lucide="plus-circle" class="w-5 h-5"></i><span>যোগ করুন</span></button>
-                         </form>
+                    <!-- Left Column: Add Item (Simple and Detailed) -->
+                    <div class="bg-white/80 p-3 rounded-lg shadow space-y-4">
+                        <div>
+                            <h3 class="font-bold mb-2 text-center">নতুন দেনা/পাওনা যোগ করুন (সাধারণ)</h3>
+                            <form id="itemForm" class="space-y-2">
+                                <input type="hidden" id="simpleItemId">
+                                <input type="text" id="itemName" placeholder="বিবরণ" class="w-full p-2 border border-gray-300 rounded-md" required>
+                                <input type="number" id="itemAmount" placeholder="টাকার পরিমাণ" class="w-full p-2 border border-gray-300 rounded-md" required>
+                                <input type="date" id="itemDate" class="w-full p-2 border border-gray-300 rounded-md" required>
+                                <button type="submit" id="addItemBtn" class="w-full bg-blue-600 text-white py-2 rounded-md font-bold hover:bg-blue-700 flex items-center justify-center space-x-2">
+                                    <i data-lucide="plus" class="w-5 h-5"></i>
+                                    <span>যোগ করুন</span>
+                                </button>
+                            </form>
+                        </div>
+                        <div class="border-t border-gray-300 pt-4">
+                             <h3 class="font-bold mb-2 text-center">অথবা</h3>
+                             <button id="openDetailedItemModalBtn" class="w-full bg-orange-web text-white py-2 rounded-md font-bold hover:bg-opacity-90 flex items-center justify-center space-x-2">
+                                 <i data-lucide="list-plus" class="w-5 h-5"></i>
+                                 <span>বিস্তারিত সহ যোগ করুন</span>
+                             </button>
+                        </div>
                     </div>
-                    <!-- Add Payment -->
+                    <!-- Right Column: Add Payment -->
                      <div class="bg-white/80 p-3 rounded-lg shadow">
                          <h3 id="addPaymentTitle" class="font-bold mb-2 text-center">পরিশোধ করুন</h3>
                          <form id="paymentForm" class="space-y-2">
@@ -243,8 +253,69 @@
         </div>
     </div>
     
+    <!-- New Modal for Detailed Item Entry -->
+    <div id="detailedItemModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-[60] items-center justify-center p-4">
+        <div class="bg-lemon-meringue rounded-lg shadow-2xl p-6 w-full max-w-lg transform transition-all scale-95 opacity-0" id="detailedItemModalContent">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="detailedItemModalTitle" class="text-2xl font-bold text-prussian-blue">বিস্তারিত সহ নতুন হিসাব</h2>
+                <button onclick="closeDetailedItemModal()" class="p-1 rounded-full hover:bg-red-200"><i data-lucide="x" class="w-6 h-6 text-imperial-red"></i></button>
+            </div>
+            <form id="detailedItemForm" onsubmit="return false;" class="space-y-4">
+                <input type="hidden" id="detailedItemId">
+                <input type="text" id="itemMainDescription" placeholder="মূল বিবরণ (যেমন: মাসিক বাজার)" class="w-full p-2 border-2 border-prussian-blue rounded-md bg-white" required>
+                <input type="date" id="detailedItemDate" class="w-full p-2 border-2 border-prussian-blue rounded-md bg-white" required>
+                
+                <div class="bg-white/60 p-3 rounded-lg">
+                    <h4 class="text-md font-semibold mb-2 text-gray-700">বিস্তারিত আইটেম যোগ করুন</h4>
+                    <div id="detailed-items-list-form" class="space-y-2 mb-3 max-h-40 overflow-y-auto p-1">
+                        <!-- Detailed items will be rendered here -->
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <input type="text" id="detail-name" placeholder="আইটেমের নাম" class="w-full p-2 border border-gray-300 rounded-md">
+                        <input type="number" id="detail-amount" placeholder="টাকা" class="w-1/3 p-2 border border-gray-300 rounded-md">
+                        <button type="button" id="add-detail-btn" class="bg-blue-600 text-white p-2 rounded-lg flex-shrink-0"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-2">
+                     <p class="font-bold text-xl">মোট: <span id="detailedTotalAmount" class="text-orange-web">৳ ০</span></p>
+                     <button type="button" id="saveDetailedItemBtn" class="w-auto bg-orange-web text-white py-2 px-6 rounded-md font-bold hover:bg-opacity-90">সেভ করুন</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- New Modal for Viewing Item Details -->
+    <div id="viewDetailsModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-[60] items-center justify-center p-4">
+         <div class="bg-lemon-meringue rounded-lg shadow-2xl p-6 w-full max-w-lg transform transition-all scale-95 opacity-0" id="viewDetailsModalContent">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="viewDetailsModalTitle" class="text-2xl font-bold text-prussian-blue">লেনদেনের বিস্তারিত</h2>
+                <button onclick="closeViewDetailsModal()" class="p-1 rounded-full hover:bg-red-200"><i data-lucide="x" class="w-6 h-6 text-imperial-red"></i></button>
+            </div>
+            <div id="viewDetailsContent" class="space-y-3 max-h-[60vh] overflow-y-auto">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Sub-Detail Modal -->
+    <div id="editSubDetailModal" class="modal fixed inset-0 bg-black bg-opacity-60 z-[80] items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm transform transition-all scale-95 opacity-0" id="editSubDetailModalContent">
+            <h2 class="text-xl font-bold mb-4">আইটেম এডিট করুন</h2>
+            <form id="editSubDetailForm" class="space-y-3" onsubmit="return false;">
+                <input type="text" id="edit-sub-detail-name" placeholder="আইটেমের নাম" class="w-full p-2 border rounded-md">
+                <input type="number" id="edit-sub-detail-amount" placeholder="টাকা" class="w-full p-2 border rounded-md">
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" id="cancelEditSubDetail" class="bg-gray-500 text-white px-4 py-2 rounded-md">বাতিল</button>
+                    <button type="submit" id="saveEditSubDetail" class="bg-green-600 text-white px-4 py-2 rounded-md">সেভ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
     <!-- Confirmation Modal -->
-    <div id="confirmModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-50 items-center justify-center p-4">
+    <div id="confirmModal" class="modal fixed inset-0 bg-black bg-opacity-50 z-[70] items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-sm transform transition-all scale-95 opacity-0" id="confirmModalContent">
             <h2 id="confirmModalTitle" class="text-xl font-bold mb-4 text-prussian-blue">আপনি কি নিশ্চিত?</h2>
             <p id="confirmModalMessage" class="text-gray-600 mb-6"></p>
@@ -256,7 +327,7 @@
     </div>
 
     <!-- Custom Alert/Toast -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-prussian-blue text-white px-6 py-3 rounded-lg shadow-lg opacity-0 translate-y-10 transition-all duration-300 z-50">
+    <div id="toast" class="fixed bottom-5 right-5 bg-prussian-blue text-white px-6 py-3 rounded-lg shadow-lg opacity-0 translate-y-10 transition-all duration-300 z-[90]">
         <p id="toastMessage"></p>
     </div>
 
@@ -577,7 +648,7 @@
                     const due = data.totalDue || 0;
 
                     card.innerHTML = `
-                        <div class="flex justify-between items-start">
+                        <div class="flex justify-between items-start mb-2">
                             <div>
                                 <h3 class="font-bold text-lg text-prussian-blue">${data.name}</h3>
                                 ${data.phone ? `<p class="text-sm text-gray-600 flex items-center gap-1"><i data-lucide="phone" class="w-3 h-3"></i>${data.phone}</p>` : ''}
@@ -587,8 +658,9 @@
                                 <button onclick="event.stopPropagation(); deleteEntity('${type}', '${doc.id}')" class="p-2 text-gray-500 hover:text-red-600"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
                             </div>
                         </div>
-                        <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="mt-4 pt-4 border-t border-gray-200 flex justify-between items-center">
                             <p class="text-sm font-bold">${pageConfigs[type].dueLabel}: <span class="text-xl ${type === 'receivables' ? 'text-green-600' : 'text-imperial-red'}">৳ ${due.toLocaleString('bn-BD')}</span></p>
+                            <span class="bg-prussian-blue text-white text-xs px-3 py-1 rounded-md">বিস্তারিত</span>
                         </div>
                     `;
                     listElement.appendChild(card);
@@ -769,27 +841,25 @@
         let paymentUnsubscribe = null;
 
         window.openDetailsModal = (type, id, name) => {
+            currentDetailedItemContext = { entityType: type, entityId: id };
             const config = pageConfigs[type].details;
             document.getElementById('detailsModalTitle').textContent = `${name} - বিস্তারিত`;
-            document.getElementById('detailsEntityId').value = id;
-            document.getElementById('detailsEntityType').value = type;
             
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('itemDate').value = today;
             document.getElementById('paymentDate').value = today;
+            document.getElementById('itemDate').value = today;
             
             // Configure modal text based on type
-            document.getElementById('addItemTitle').textContent = config.addItemTitle;
             document.getElementById('addPaymentTitle').textContent = config.addPaymentTitle;
             document.getElementById('totalDueLabel').textContent = `${config.totalDueLabel}:`;
             document.querySelector('.tab-btn[onclick="showTab(\'itemsTab\')"]').textContent = config.itemsTabLabel;
             document.querySelector('.tab-btn[onclick="showTab(\'paymentsTab\')"]').textContent = config.paymentsTabLabel;
-            document.getElementById('itemName').placeholder = config.itemNamePlaceholder;
 
             const totalDueEl = document.getElementById('detailsTotalDue');
             totalDueEl.classList.toggle('text-green-600', type === 'receivables');
             totalDueEl.classList.toggle('text-selective-yellow', type !== 'receivables');
 
+            document.getElementById('openDetailedItemModalBtn').onclick = () => openDetailedItemModal(type, id);
 
             listenToSubCollection(type, id, 'items');
             listenToSubCollection(type, id, 'payments');
@@ -830,8 +900,13 @@
                     
                     const transactionDate = data.date ? data.date.toDate().toLocaleDateString('bn-BD') : (data.createdAt ? data.createdAt.toDate().toLocaleDateString('bn-BD') : 'তারিখ নেই');
                     const dateForInput = data.date ? new Date(data.date.toDate().getTime() - (data.date.toDate().getTimezoneOffset() * 60000)).toISOString().split('T')[0] : '';
-                        
+                    
                     if (subCollectionType === 'items') {
+                        const hasDetails = data.hasDetails || false;
+                        const editButtonHtml = !hasDetails ? 
+                            `<button onclick="editItem('${entityType}', '${entityId}', '${docSnap.id}', '${data.name.replace(/'/g, "\\'")}', ${data.amount}, '${dateForInput}')" class="p-1 text-gray-400 hover:text-blue-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button>` :
+                            `<button onclick="openDetailedItemModal('${entityType}', '${entityId}', '${docSnap.id}')" class="p-1 text-gray-400 hover:text-yellow-500"><i data-lucide="file-edit" class="w-4 h-4"></i></button>`;
+
                         itemDiv.innerHTML = `
                             <div>
                                 <p class="font-bold">${data.name}</p>
@@ -839,8 +914,9 @@
                             </div>
                             <div class="flex items-center space-x-3">
                                 <span class="font-bold text-lg text-imperial-red">৳ ${data.amount.toLocaleString('bn-BD')}</span>
-                                <button onclick="editItem('${entityType}', '${entityId}', '${docSnap.id}', '${data.name.replace(/'/g, "\\'")}', ${data.amount}, '${dateForInput}')" class="p-1 text-gray-400 hover:text-blue-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="deleteSubCollectionDoc('${entityType}', '${entityId}', '${subCollectionType}', '${docSnap.id}')" class="p-1 text-gray-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                                ${hasDetails ? `<button onclick="viewTransactionDetails('${entityType}', '${entityId}', '${docSnap.id}')" class="p-1 text-gray-400 hover:text-blue-500"><i data-lucide="eye" class="w-4 h-4"></i></button>` : ''}
+                                ${editButtonHtml}
+                                <button onclick="deleteSubCollectionDoc('${entityType}', '${entityId}', '${subCollectionType}', '${docSnap.id}', ${hasDetails})" class="p-1 text-gray-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button>
                             </div>
                         `;
                     } else { // payments
@@ -852,7 +928,7 @@
                             <div class="flex items-center space-x-3">
                                 <span class="font-bold text-lg text-green-600">৳ ${data.amount.toLocaleString('bn-BD')}</span>
                                 <button onclick="editPayment('${entityType}', '${entityId}', '${docSnap.id}', '${(data.description || '').replace(/'/g, "\\'")}', ${data.amount}, '${dateForInput}')" class="p-1 text-gray-400 hover:text-blue-500"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="deleteSubCollectionDoc('${entityType}', '${entityId}', '${subCollectionType}', '${docSnap.id}')" class="p-1 text-gray-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                                <button onclick="deleteSubCollectionDoc('${entityType}', '${entityId}', '${subCollectionType}', '${docSnap.id}', false)" class="p-1 text-gray-400 hover:text-red-500"><i data-lucide="trash" class="w-4 h-4"></i></button>
                             </div>
                         `;
                     }
@@ -892,18 +968,17 @@
             }
         }
         
-        // --- Item Form (Add/Edit) ---
+        // --- Simple Item Form (Add/Edit) ---
         document.getElementById('itemForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const entityType = document.getElementById('detailsEntityType').value;
-            const entityId = document.getElementById('detailsEntityId').value;
-            const itemId = document.getElementById('itemId').value;
-            const name = document.getElementById('itemName').value;
+            const { entityType, entityId } = currentDetailedItemContext;
+            const itemId = document.getElementById('simpleItemId').value;
+            const name = document.getElementById('itemName').value.trim();
             const amount = parseFloat(document.getElementById('itemAmount').value);
             const dateValue = document.getElementById('itemDate').value;
 
-            if (isNaN(amount) || amount <= 0) {
-                showToast('সঠিক পরিমাণ লিখুন।', 'error');
+            if (!name || isNaN(amount) || amount <= 0) {
+                showToast('সঠিক বিবরণ এবং টাকার পরিমাণ দিন।', 'error');
                 return;
             }
             if (!dateValue) {
@@ -916,25 +991,30 @@
             const data = {
                 name,
                 amount,
-                date: Timestamp.fromDate(new Date(dateValue))
+                date: Timestamp.fromDate(new Date(dateValue)),
+                updatedAt: serverTimestamp()
             };
 
             try {
-                if (itemId) { // Editing
-                    data.updatedAt = serverTimestamp();
+                if (itemId) {
                     const itemRef = doc(db, 'users', userId, collectionName, entityId, 'items', itemId);
                     await updateDoc(itemRef, data);
-                    showToast('সফলভাবে আপডেট হয়েছে।');
-                } else { // Adding
+                    showToast('হিসাব সফলভাবে আপডেট হয়েছে।');
+                } else {
+                    data.hasDetails = false;
                     data.createdAt = serverTimestamp();
                     const subCollectionRef = collection(db, 'users', userId, collectionName, entityId, 'items');
                     await addDoc(subCollectionRef, data);
-                    showToast('সফলভাবে যোগ হয়েছে।');
+                    showToast('হিসাব সফলভাবে যোগ হয়েছে।');
                 }
+                
                 document.getElementById('itemForm').reset();
+                document.getElementById('simpleItemId').value = '';
                 document.getElementById('itemDate').value = new Date().toISOString().split('T')[0];
-                document.getElementById('itemId').value = '';
-                document.getElementById('addItemBtn').innerHTML = '<i data-lucide="plus-circle" class="w-5 h-5"></i><span>যোগ করুন</span>';
+                const addItemBtn = document.getElementById('addItemBtn');
+                addItemBtn.innerHTML = '<i data-lucide="plus" class="w-5 h-5"></i><span>যোগ করুন</span>';
+                addItemBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                addItemBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 lucide.createIcons();
             } catch (error) {
                 console.error("Error saving item: ", error);
@@ -943,22 +1023,319 @@
         });
 
         window.editItem = (entityType, entityId, itemId, name, amount, date) => {
-            document.getElementById('detailsEntityType').value = entityType;
-            document.getElementById('detailsEntityId').value = entityId;
-            document.getElementById('itemId').value = itemId;
+            document.getElementById('simpleItemId').value = itemId;
             document.getElementById('itemName').value = name;
             document.getElementById('itemAmount').value = amount;
             document.getElementById('itemDate').value = date;
-            document.getElementById('addItemBtn').innerHTML = '<i data-lucide="save" class="w-5 h-5"></i><span>আপডেট করুন</span>';
+            
+            const addItemBtn = document.getElementById('addItemBtn');
+            addItemBtn.innerHTML = '<i data-lucide="save" class="w-5 h-5"></i><span>আপডেট করুন</span>';
+            addItemBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            addItemBtn.classList.add('bg-green-600', 'hover:bg-green-700');
             lucide.createIcons();
             document.getElementById('itemName').focus();
         };
 
+        // --- Detailed Item Modal Logic ---
+        const detailedItemModal = document.getElementById('detailedItemModal');
+        const detailedItemModalContent = document.getElementById('detailedItemModalContent');
+        let tempDetailedItems = [];
+        let currentDetailedItemContext = {};
+
+        window.openDetailedItemModal = async (entityType, entityId, itemId = null) => {
+            currentDetailedItemContext = { entityType, entityId, itemId };
+            tempDetailedItems = [];
+            document.getElementById('detailedItemForm').reset();
+            document.getElementById('detailedItemId').value = itemId || '';
+            
+            if (itemId) {
+                document.getElementById('detailedItemModalTitle').textContent = 'বিস্তারিত হিসাব এডিট করুন';
+                const collectionName = pageConfigs[entityType].collectionName;
+                const itemRef = doc(db, 'users', userId, collectionName, entityId, 'items', itemId);
+                const itemSnap = await getDoc(itemRef);
+                if (itemSnap.exists()) {
+                    const itemData = itemSnap.data();
+                    document.getElementById('itemMainDescription').value = itemData.name;
+                    document.getElementById('detailedItemDate').value = new Date(itemData.date.toDate().getTime() - (itemData.date.toDate().getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+                    
+                    const detailsColRef = collection(itemRef, 'details');
+                    const detailsSnap = await getDocs(detailsColRef);
+                    tempDetailedItems = detailsSnap.docs.map(d => d.data());
+                }
+            } else {
+                document.getElementById('detailedItemModalTitle').textContent = 'বিস্তারিত সহ নতুন হিসাব';
+                document.getElementById('detailedItemDate').value = new Date().toISOString().split('T')[0];
+            }
+
+            renderTempItems();
+            
+            detailedItemModal.classList.add('flex');
+            setTimeout(() => detailedItemModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+            lucide.createIcons();
+        };
+
+        window.closeDetailedItemModal = () => {
+            detailedItemModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => detailedItemModal.classList.remove('flex'), 200);
+        };
+
+        function addTempItem() {
+            const nameInput = document.getElementById('detail-name');
+            const amountInput = document.getElementById('detail-amount');
+            const name = nameInput.value.trim();
+            const amount = parseFloat(amountInput.value);
+
+            if (name && !isNaN(amount) && amount > 0) {
+                tempDetailedItems.push({ name, amount });
+                renderTempItems();
+                nameInput.value = '';
+                amountInput.value = '';
+                nameInput.focus();
+            } else {
+                showToast('সঠিক নাম এবং টাকার পরিমাণ দিন।', 'error');
+            }
+        }
+
+        function renderTempItems() {
+            const listEl = document.getElementById('detailed-items-list-form');
+            const totalAmountEl = document.getElementById('detailedTotalAmount');
+            listEl.innerHTML = '';
+            let total = 0;
+
+            tempDetailedItems.forEach((item, index) => {
+                total += item.amount;
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex justify-between items-center bg-gray-200 p-2 rounded';
+                itemEl.innerHTML = `
+                    <span>${item.name}</span>
+                    <div class="flex items-center gap-2">
+                        <span>৳ ${item.amount.toLocaleString('bn-BD')}</span>
+                        <button type="button" class="text-red-500 remove-temp-item-btn" data-index="${index}"><i data-lucide="x-circle" class="w-4 h-4"></i></button>
+                    </div>
+                `;
+                listEl.appendChild(itemEl);
+            });
+
+            totalAmountEl.textContent = `৳ ${total.toLocaleString('bn-BD')}`;
+            lucide.createIcons();
+
+            document.querySelectorAll('.remove-temp-item-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    const indexToRemove = parseInt(e.currentTarget.dataset.index, 10);
+                    tempDetailedItems.splice(indexToRemove, 1);
+                    renderTempItems();
+                };
+            });
+        }
+        
+        document.getElementById('add-detail-btn').addEventListener('click', addTempItem);
+        document.getElementById('detail-amount').addEventListener('keypress', (e) => { if(e.key === 'Enter') addTempItem(); });
+
+        async function saveDetailedItem() {
+            const { entityType, entityId, itemId } = currentDetailedItemContext;
+            const mainDescription = document.getElementById('itemMainDescription').value.trim();
+            const dateValue = document.getElementById('detailedItemDate').value;
+
+            if (!mainDescription) {
+                showToast('অনুগ্রহ করে একটি মূল বিবরণ দিন।', 'error');
+                return;
+            }
+            if (tempDetailedItems.length === 0) {
+                showToast('অনুগ্রহ করে কমপক্ষে একটি বিস্তারিত আইটেম যোগ করুন।', 'error');
+                return;
+            }
+
+            const totalAmount = tempDetailedItems.reduce((sum, item) => sum + item.amount, 0);
+            const collectionName = pageConfigs[entityType].collectionName;
+
+            const mainItemData = {
+                name: mainDescription,
+                amount: totalAmount,
+                date: Timestamp.fromDate(new Date(dateValue)),
+                hasDetails: true,
+                updatedAt: serverTimestamp()
+            };
+
+            try {
+                let mainItemRef;
+                if (itemId) { // Editing existing item
+                    mainItemRef = doc(db, 'users', userId, collectionName, entityId, 'items', itemId);
+                    await updateDoc(mainItemRef, mainItemData);
+                } else { // Adding new item
+                    mainItemData.createdAt = serverTimestamp();
+                    mainItemRef = await addDoc(collection(db, 'users', userId, collectionName, entityId, 'items'), mainItemData);
+                }
+                
+                // Overwrite details subcollection
+                const detailsColRef = collection(mainItemRef, 'details');
+                const oldDetailsSnap = await getDocs(detailsColRef);
+                const deleteBatch = writeBatch(db);
+                oldDetailsSnap.forEach(d => deleteBatch.delete(d.ref));
+                await deleteBatch.commit();
+
+                const addBatch = writeBatch(db);
+                tempDetailedItems.forEach(item => {
+                    const newItemRef = doc(detailsColRef);
+                    addBatch.set(newItemRef, item);
+                });
+                await addBatch.commit();
+
+                showToast(`হিসাব সফলভাবে ${itemId ? 'আপডেট' : 'সেভ'} হয়েছে।`);
+                closeDetailedItemModal();
+            } catch (error) {
+                console.error("Error saving detailed item: ", error);
+                showToast('সেভ করতে সমস্যা হয়েছে।', 'error');
+            }
+        }
+        
+        document.getElementById('saveDetailedItemBtn').addEventListener('click', saveDetailedItem);
+        
+        // --- View Transaction Details Modal ---
+        const viewDetailsModal = document.getElementById('viewDetailsModal');
+        const viewDetailsModalContent = document.getElementById('viewDetailsModalContent');
+        let currentViewContext = {};
+
+        window.viewTransactionDetails = async (entityType, entityId, itemId) => {
+            currentViewContext = { entityType, entityId, itemId };
+            const collectionName = pageConfigs[entityType].collectionName;
+            const detailsColRef = collection(db, 'users', userId, collectionName, entityId, 'items', itemId, 'details');
+            const contentEl = document.getElementById('viewDetailsContent');
+            contentEl.innerHTML = '<p>লোড হচ্ছে...</p>';
+            openViewDetailsModal();
+
+            try {
+                const detailsSnap = await getDocs(detailsColRef);
+                if (detailsSnap.empty) {
+                    contentEl.innerHTML = '<p>কোনো বিস্তারিত বিবরণ নেই।</p>';
+                    return;
+                }
+                
+                let detailsHtml = '<ul class="space-y-2">';
+                detailsSnap.forEach(docSnap => {
+                    const item = docSnap.data();
+                    detailsHtml += `<li class="flex justify-between items-center bg-white p-2 rounded-md">
+                        <span>${item.name}</span>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold">৳ ${item.amount.toLocaleString('bn-BD')}</span>
+                            <button onclick="editSubDetailItem('${docSnap.id}')" class="p-1 text-blue-500 hover:text-blue-700"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
+                            <button onclick="deleteSubDetailItem('${docSnap.id}')" class="p-1 text-red-500 hover:text-red-700"><i data-lucide="trash" class="w-4 h-4"></i></button>
+                        </div>
+                    </li>`;
+                });
+                detailsHtml += '</ul>';
+                contentEl.innerHTML = detailsHtml;
+                lucide.createIcons();
+
+            } catch (error) {
+                console.error("Error fetching transaction details:", error);
+                contentEl.innerHTML = '<p class="text-red-500">বিস্তারিত আনতে সমস্যা হয়েছে।</p>';
+            }
+        };
+
+        function openViewDetailsModal() {
+            viewDetailsModal.classList.add('flex');
+            setTimeout(() => viewDetailsModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+        }
+
+        window.closeViewDetailsModal = () => {
+            viewDetailsModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => viewDetailsModal.classList.remove('flex'), 200);
+        };
+
+        // --- Edit/Delete Sub-Detail Logic ---
+        const editSubDetailModal = document.getElementById('editSubDetailModal');
+        const editSubDetailModalContent = document.getElementById('editSubDetailModalContent');
+        const editSubDetailForm = document.getElementById('editSubDetailForm');
+        let currentSubDetailContext = {};
+
+        window.editSubDetailItem = async (subDetailId) => {
+            const { entityType, entityId, itemId } = currentViewContext;
+            currentSubDetailContext = { entityType, entityId, itemId, subDetailId };
+            
+            const collectionName = pageConfigs[entityType].collectionName;
+            const subDetailRef = doc(db, 'users', userId, collectionName, entityId, 'items', itemId, 'details', subDetailId);
+            
+            try {
+                const subDetailSnap = await getDoc(subDetailRef);
+                if (subDetailSnap.exists()) {
+                    const data = subDetailSnap.data();
+                    document.getElementById('edit-sub-detail-name').value = data.name;
+                    document.getElementById('edit-sub-detail-amount').value = data.amount;
+                    
+                    editSubDetailModal.classList.add('flex');
+                    setTimeout(() => editSubDetailModalContent.classList.remove('scale-95', 'opacity-0'), 10);
+                }
+            } catch (error) {
+                showToast('আইটেমটি লোড করতে সমস্যা হয়েছে।', 'error');
+            }
+        };
+
+        document.getElementById('cancelEditSubDetail').addEventListener('click', () => {
+            editSubDetailModalContent.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => editSubDetailModal.classList.remove('flex'), 200);
+        });
+
+        editSubDetailForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { entityType, entityId, itemId, subDetailId } = currentSubDetailContext;
+            const newName = document.getElementById('edit-sub-detail-name').value.trim();
+            const newAmount = parseFloat(document.getElementById('edit-sub-detail-amount').value);
+
+            if (!newName || isNaN(newAmount) || newAmount <= 0) {
+                showToast('সঠিক নাম এবং টাকার পরিমাণ দিন।', 'error');
+                return;
+            }
+
+            const collectionName = pageConfigs[entityType].collectionName;
+            const subDetailRef = doc(db, 'users', userId, collectionName, entityId, 'items', itemId, 'details', subDetailId);
+
+            try {
+                await updateDoc(subDetailRef, { name: newName, amount: newAmount });
+                
+                // Recalculate total for the main item
+                const mainItemRef = doc(db, 'users', userId, collectionName, entityId, 'items', itemId);
+                const detailsColRef = collection(mainItemRef, 'details');
+                const allDetailsSnap = await getDocs(detailsColRef);
+                const newTotalAmount = allDetailsSnap.docs.reduce((sum, doc) => sum + doc.data().amount, 0);
+                await updateDoc(mainItemRef, { amount: newTotalAmount });
+
+                showToast('আইটেম আপডেট হয়েছে।');
+                document.getElementById('cancelEditSubDetail').click(); // Close modal
+                viewTransactionDetails(entityType, entityId, itemId); // Refresh view
+            } catch (error) {
+                showToast('আপডেট করতে সমস্যা হয়েছে।', 'error');
+            }
+        });
+
+        window.deleteSubDetailItem = (subDetailId) => {
+            const { entityType, entityId, itemId } = currentViewContext;
+            showConfirmModal('আপনি কি এই আইটেমটি মুছে ফেলতে চান?', async () => {
+                const collectionName = pageConfigs[entityType].collectionName;
+                const subDetailRef = doc(db, 'users', userId, collectionName, entityId, 'items', itemId, 'details', subDetailId);
+                
+                try {
+                    await deleteDoc(subDetailRef);
+                    
+                    // Recalculate total
+                    const mainItemRef = doc(db, 'users', userId, collectionName, entityId, 'items', itemId);
+                    const detailsColRef = collection(mainItemRef, 'details');
+                    const allDetailsSnap = await getDocs(detailsColRef);
+                    const newTotalAmount = allDetailsSnap.docs.reduce((sum, doc) => sum + doc.data().amount, 0);
+                    await updateDoc(mainItemRef, { amount: newTotalAmount });
+
+                    showToast('আইটেম মুছে ফেলা হয়েছে।');
+                    viewTransactionDetails(entityType, entityId, itemId); // Refresh view
+                } catch (error) {
+                    showToast('মুছে ফেলতে সমস্যা হয়েছে।', 'error');
+                }
+            });
+        };
+
+
         // --- Payment Form ---
         document.getElementById('paymentForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const entityType = document.getElementById('detailsEntityType').value;
-            const entityId = document.getElementById('detailsEntityId').value;
+            const { entityType, entityId } = currentDetailedItemContext;
             const paymentId = document.getElementById('paymentId').value;
             const amount = parseFloat(document.getElementById('paymentAmount').value);
             const description = document.getElementById('paymentDescription').value;
@@ -978,25 +1355,27 @@
             const data = {
                 amount,
                 description,
-                date: Timestamp.fromDate(new Date(dateValue))
+                date: Timestamp.fromDate(new Date(dateValue)),
+                updatedAt: serverTimestamp()
             };
 
             try {
-                if (paymentId) { // Editing
-                    data.updatedAt = serverTimestamp();
+                if (paymentId) {
                     const paymentRef = doc(db, 'users', userId, collectionName, entityId, 'payments', paymentId);
                     await updateDoc(paymentRef, data);
-                    showToast('সফলভাবে আপডেট হয়েছে।');
-                } else { // Adding
+                    showToast('পরিশোধ সফলভাবে আপডেট হয়েছে।');
+                } else {
                     data.createdAt = serverTimestamp();
                     const subCollectionRef = collection(db, 'users', userId, collectionName, entityId, 'payments');
                     await addDoc(subCollectionRef, data);
                     showToast('পরিশোধ যোগ হয়েছে।');
                 }
+                
                 document.getElementById('paymentForm').reset();
-                document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
                 document.getElementById('paymentId').value = '';
-                document.getElementById('paymentSubmitBtn').innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i><span>পরিশোধ</span>';
+                document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+                const paymentSubmitBtn = document.getElementById('paymentSubmitBtn');
+                paymentSubmitBtn.innerHTML = '<i data-lucide="check-circle" class="w-5 h-5"></i><span>পরিশোধ</span>';
                 lucide.createIcons();
             } catch (error) {
                 console.error("Error saving payment: ", error);
@@ -1005,24 +1384,33 @@
         });
         
         window.editPayment = (entityType, entityId, paymentId, description, amount, date) => {
-            document.getElementById('detailsEntityType').value = entityType;
-            document.getElementById('detailsEntityId').value = entityId;
             document.getElementById('paymentId').value = paymentId;
             document.getElementById('paymentDescription').value = description;
             document.getElementById('paymentAmount').value = amount;
             document.getElementById('paymentDate').value = date;
-            document.getElementById('paymentSubmitBtn').innerHTML = '<i data-lucide="save" class="w-5 h-5"></i><span>আপডেট করুন</span>';
+
+            const paymentSubmitBtn = document.getElementById('paymentSubmitBtn');
+            paymentSubmitBtn.innerHTML = '<i data-lucide="save" class="w-5 h-5"></i><span>আপডেট করুন</span>';
             lucide.createIcons();
             document.getElementById('paymentDescription').focus();
         };
         
-        window.deleteSubCollectionDoc = (entityType, entityId, subCollectionType, docId) => {
+        window.deleteSubCollectionDoc = (entityType, entityId, subCollectionType, docId, hasDetails) => {
             const message = 'আপনি কি নিশ্চিতভাবে এই আইটেমটি মুছে ফেলতে চান?';
             showConfirmModal(message, async () => {
                 const collectionName = pageConfigs[entityType].collectionName;
                 const docRef = doc(db, 'users', userId, collectionName, entityId, subCollectionType, docId);
                 
                 try {
+                    // If the item has details, delete the sub-collection first
+                    if (hasDetails && subCollectionType === 'items') {
+                        const detailsColRef = collection(docRef, 'details');
+                        const detailsSnap = await getDocs(detailsColRef);
+                        const batch = writeBatch(db);
+                        detailsSnap.forEach(d => batch.delete(d.ref));
+                        await batch.commit();
+                    }
+
                     await deleteDoc(docRef);
                     showToast('সফলভাবে মুছে ফেলা হয়েছে।');
                 } catch (error) {
@@ -1054,7 +1442,15 @@
                     
                     // Export subcollections
                     const itemsSnap = await getDocs(collection(docSnap.ref, 'items'));
-                    docData.items = itemsSnap.docs.map(d => ({...d.data(), id: d.id}));
+                    docData.items = [];
+                    for (const itemDoc of itemsSnap.docs) {
+                        const itemData = {...itemDoc.data(), id: itemDoc.id};
+                        if (itemData.hasDetails) {
+                            const detailsSnap = await getDocs(collection(itemDoc.ref, 'details'));
+                            itemData.details = detailsSnap.docs.map(d => ({...d.data(), id: d.id}));
+                        }
+                        docData.items.push(itemData);
+                    }
 
                     const paymentsSnap = await getDocs(collection(docSnap.ref, 'payments'));
                     docData.payments = paymentsSnap.docs.map(d => ({...d.data(), id: d.id}));
@@ -1085,61 +1481,58 @@
                 const importStatus = document.getElementById('import-status');
                 try {
                     const data = JSON.parse(e.target.result);
-                    if (!confirm('আপনি কি নিশ্চিতভাবে ডাটা ইম্পোর্ট করতে চান? বর্তমান সকল ডাটা মুছে নতুন ডাটা যোগ করা হবে।')) {
-                        importStatus.textContent = 'ইম্পোর্ট বাতিল করা হয়েছে।';
-                        importStatus.className = 'mt-4 text-center text-yellow-600';
-                        return;
-                    }
-
-                    importStatus.textContent = 'ইম্পোর্ট চলছে... অনুগ্রহ করে অপেক্ষা করুন।';
-                    importStatus.className = 'mt-4 text-center text-blue-600';
-
-                    const batch = writeBatch(db);
-
-                    // First, delete all existing data for the user
-                    for (const type of Object.keys(pageConfigs)) {
-                        const config = pageConfigs[type];
-                        const collectionRef = collection(db, 'users', userId, config.collectionName);
-                        const querySnapshot = await getDocs(collectionRef);
-                        for (const docSnap of querySnapshot.docs) {
-                            batch.delete(docSnap.ref);
-                        }
-                    }
-                    await batch.commit(); // Commit deletions first
-
-                    // Now, import new data
-                    const importBatch = writeBatch(db);
-                    for (const type of Object.keys(pageConfigs)) {
-                        const config = pageConfigs[type];
-                        const collectionData = data[config.collectionName];
-                        if (collectionData && Array.isArray(collectionData)) {
-                            for (const record of collectionData) {
-                                const { id, items, payments, ...mainData } = record;
-                                const docRef = doc(db, 'users', userId, config.collectionName, id);
-                                importBatch.set(docRef, mainData);
-
-                                if(items) {
-                                    items.forEach(item => {
-                                        const {id: itemId, ...itemData} = item;
-                                        const itemRef = doc(docRef, 'items', itemId);
-                                        importBatch.set(itemRef, itemData);
-                                    });
-                                }
-                                if(payments) {
-                                    payments.forEach(payment => {
-                                        const {id: paymentId, ...paymentData} = payment;
-                                        const paymentRef = doc(docRef, 'payments', paymentId);
-                                        importBatch.set(paymentRef, paymentData);
-                                    });
-                                }
-                            }
-                        }
-                    }
-                    await importBatch.commit();
                     
-                    importStatus.textContent = 'ডাটা সফলভাবে ইম্পোর্ট হয়েছে!';
-                    importStatus.className = 'mt-4 text-center text-green-600';
-                    showToast('ডাটা সফলভাবে ইম্পোর্ট হয়েছে!');
+                    showConfirmModal('আপনি কি নিশ্চিতভাবে ডাটা ইম্পোর্ট করতে চান? বর্তমান সকল ডাটা মুছে নতুন ডাটা যোগ করা হবে।', async () => {
+                        importStatus.textContent = 'ইম্পোর্ট চলছে... অনুগ্রহ করে অপেক্ষা করুন।';
+                        importStatus.className = 'mt-4 text-center text-blue-600';
+
+                        // This is a complex operation, might be better to delete and add collection by collection
+                        for (const type of Object.keys(pageConfigs)) {
+                             const config = pageConfigs[type];
+                             const collectionRef = collection(db, 'users', userId, config.collectionName);
+                             const oldDocs = await getDocs(collectionRef);
+                             const deleteBatch = writeBatch(db);
+                             oldDocs.forEach(doc => deleteBatch.delete(doc.ref));
+                             await deleteBatch.commit();
+
+                             const importBatch = writeBatch(db);
+                             const collectionData = data[config.collectionName];
+                             if (collectionData && Array.isArray(collectionData)) {
+                                 for (const record of collectionData) {
+                                     const { id, items, payments, ...mainData } = record;
+                                     const docRef = doc(collectionRef, id);
+                                     importBatch.set(docRef, mainData);
+
+                                     if(items) {
+                                         items.forEach(item => {
+                                             const {id: itemId, details, ...itemData} = item;
+                                             const itemRef = doc(collection(docRef, 'items'), itemId);
+                                             importBatch.set(itemRef, itemData);
+                                             if (details) {
+                                                 details.forEach(detail => {
+                                                     const {id: detailId, ...detailData} = detail;
+                                                     const detailRef = doc(collection(itemRef, 'details'), detailId);
+                                                     importBatch.set(detailRef, detailData);
+                                                 });
+                                             }
+                                         });
+                                     }
+                                     if(payments) {
+                                         payments.forEach(payment => {
+                                             const {id: paymentId, ...paymentData} = payment;
+                                             const paymentRef = doc(collection(docRef, 'payments'), paymentId);
+                                             importBatch.set(paymentRef, paymentData);
+                                         });
+                                     }
+                                 }
+                             }
+                              await importBatch.commit();
+                        }
+                        
+                        importStatus.textContent = 'ডাটা সফলভাবে ইম্পোর্ট হয়েছে!';
+                        importStatus.className = 'mt-4 text-center text-green-600';
+                        showToast('ডাটা সফলভাবে ইম্পোর্ট হয়েছে!');
+                    });
 
                 } catch (error) {
                     console.error("Import error: ", error);
